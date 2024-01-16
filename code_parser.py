@@ -62,14 +62,17 @@ class Code_Parser:
   #Checks defined Functions and their parameters
   #Checks called Functions and their arguments
   def handle_functions(self, node):
-    if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef))
+    if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef)):
       if len(node.args.args) > 0:
         self.defined_functions[node.name] = [param.arg for param in node.args.args]
       else:
         self.defined_functions[node.name] = None
     elif isinstance(node,ast.Call):
       if hasattr(node.func, "id"):
-        self.called_functions[node.func.id] = [arg for arg in node.args]
+        if len(node.args) > 0:
+          self.called_functions[node.func.id] = [arg for arg in node.args]
+        else:
+          self.called_functions[node.func.id] = None
 
   def check_variables(self):
     for variable in self.variables:
@@ -99,9 +102,9 @@ class Code_Parser:
         #Checks if the variable has the correct value
         if expected_value == actual_value :
           #Correct
-          feedback += f"It has the value: {actual_value}"
+          feedback += f"'{variable}'has the value: {actual_value}"
         else:
-          feedback += f"It has the wrong value. Expected '{expected_value}' but got '{actual_value}'"
+          feedback += f"'{variable}'has the wrong value. Expected '{expected_value}' but got '{actual_value}'"
 
         self.feedback.add(feedback)
       else:
@@ -112,6 +115,8 @@ class Code_Parser:
 
   def check_functions(self):
     pass
+
+
   def set_variables(self, variables):
     self.variables = variables
 
