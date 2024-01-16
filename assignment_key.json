@@ -1,0 +1,10 @@
+{
+  "variables":{
+    "name": ["value","Function"]
+
+  },
+  "functions":{
+    "name": [["parameters"],["arguments"]],
+    "name1": [["parameters"],["arguments"]]
+  }
+}

@@ -178,6 +178,7 @@ if __name__ == "__main__":
   source_code = readfile("test_code.py")
   check_variable_declaration(source_code, "x")
   check_variable_declaration(source_code, "a")
+  check_variable_declaration(source_code, "b")
 
   check_function_definition(source_code,"greet")
   check_function_definition(source_code,"square")
