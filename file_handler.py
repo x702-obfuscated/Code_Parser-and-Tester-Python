@@ -1,4 +1,5 @@
 import os
+import json
 
 class File_Handler:
 
@@ -22,3 +23,9 @@ class File_Handler:
       content = file.read()
 
     return content
+  
+  def read_json(file_path):
+    json_dict = {}
+    with open(file_path, "r") as file:
+      json_dict = json.load(file)
+    return json_dict
