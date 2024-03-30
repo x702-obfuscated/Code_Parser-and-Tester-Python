@@ -1,10 +1,14 @@
-import ast,os,time
-#class for grading a single file
+import ast
+from file_handler import File_Handler
+
+
 class Code_Parser:
 
-  def __init__(self,code):
+  def __init__(self,code,key):
     #abstract syntax tree
     self.set_tree(code)
+    # print(ast.dump(self.tree))
+    
     
     #Values to be checked
     self.variables = {} #name: (value, function name)
@@ -14,8 +18,16 @@ class Code_Parser:
     self.declared_variables = {} #name : (value, function name)
     self.defined_functions = {} #name : parameters
     self.called_functions = {} #name : arguments
-    self.feedback = set()
+    self.feedback = list()
     self.score = 0
+
+    self.parse()
+    self.set_variables(key['variables'])
+    self.set_functions(key['functions'])
+    self.check_variables()
+    self.check_functions()
+    self.display_results()
+
 
   #Parses the provided code 
   def parse (self):
@@ -63,6 +75,7 @@ class Code_Parser:
   #Checks called Functions and their arguments
   def handle_functions(self, node):
     if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef)):
+    if isinstance(node,(ast.FunctionDef,ast.AsyncFunctionDef)):
       if len(node.args.args) > 0:
         self.defined_functions[node.name] = [param.arg for param in node.args.args]
       else:
@@ -106,17 +119,51 @@ class Code_Parser:
         else:
           feedback += f"'{variable}'has the wrong value. Expected '{expected_value}' but got '{actual_value}'"
 
-        self.feedback.add(feedback)
+        self.feedback.append(feedback)
       else:
-        self.feedback.add(f"{variable} is not found")
-
-
+        self.feedback.append(f"{variable} is not found")
 
 
   def check_functions(self):
-    pass
+    try:
+      for function in self.functions:
+        expected_parameters = function[0]
+        expected_arguments = function[1]
 
+        #check definition
+        if function in self.defined_functions:
+          actual_parameters = self.defined_functions[function]
+          
+          feedback = f"'{function}' is defined. "
 
+          if expected_parameters == actual_parameters:
+            feedback += f"It has the parameters {actual_parameters}. "
+          else:
+            feedback += f"But, has the wrong parameters. Expected '{expected_parameters}' but got '{actual_parameters}'."
+          
+          self.feedback.append(feedback)
+
+        else:
+          self.feedback.append(f"'{function}' is not defined.")
+
+        if function in self.called_functions:
+          actual_arguments = self.called_functions[function]
+          
+          feedback = f"'{function}' was called. "
+
+          if expected_arguments == actual_arguments:
+            feedback += f"It was called with the arguments '{actual_arguments}'. "
+          else:
+            feedback += f"But, with the wrong arguments. Expected '{expected_arguments}', but got '{actual_arguments}'."
+          self.feedback.append(feedback)
+        else:
+          self.feedback.append(f"'{function}' was not called.")
+
+        
+
+    except SyntaxError as e:
+      print(f"SyntaxError: {e}")
+  
   def set_variables(self, variables):
     self.variables = variables
 
@@ -131,35 +178,63 @@ class Code_Parser:
       print(f"SyntaxError: {e}")
 
 
+  def display_results(self):
+    for elem in self.feedback:
+      print(elem)
 if __name__ == "__main__":
+
+  # variables --> #name: (value, function name)
+  # functions -->  #name: (parameters, arguments)
+  key = {
+    "variables":{
+      "x": [10, None],
+      "y": ["Hello, World!", None],
+      "z": [3.14, None],
+
+    },
+    "functions":{
+      "greet": ["name","Student"]
+      
+    }
+  }
+
+
+  code = File_Handler.readfile('.\main.py')
+
     
-  #Testing
-  code = '''    
-    x = 10
-    y = "Hello, World!"
-    z = 3.14
 
-    print(x + z)
 
-    def greet(name):
-        print(f"Hello, {name}!")
+  Code_Parser(code,key)
+  
+  
+ 
 
-    def square(x):
-        return x ** 2
+'''
 
-    def define():
-        greet("Mike")
-        b = 2
+x = 10
+y = "Hello, World!"
+z = 3.14
 
-    def set_params(a,b,c):
-        return
+print(x + z)
 
-    def not_set_params():
-        return
 
-  '''
+def greet(name):
+    print(f"Hello, {name}!")
 
-  parser = Code_Parser(code)
 
+
+def square(x):
+    return x ** 2
+
+def define():
+    greet("Mike")
+    b = 2
+
+def set_params(a,b,c):
+    return
+
+def not_set_params():
+    return
+'''
 
 
